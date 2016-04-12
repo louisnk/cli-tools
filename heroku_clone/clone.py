@@ -51,7 +51,7 @@ class settingsCollector:
 
 	def listEnvVars(self):
 		customIgnores = (os.environ['HEROKU_CLONE_SACRED'] + '|') if 'HEROKU_CLONE_SACRED' in os.environ is not False else ''
-
+		print ""
 		for i,key in enumerate(heroku.existingEnvVars):
 			if re.compile(customIgnores + '(DATABASE_URL)').search(key) is None:
 				print "[" + str(i) + "] " + key
@@ -86,10 +86,11 @@ class settingsCollector:
 
 class herokuHandler:
 	def __init__(self):
-		self.existingName = ""
 		self.existingEnvVars = {}
-		self.newName = ""
+		self.existingName = ""
+		self.existingPipeline = ""
 		self.newEnvVars = {}
+		self.newName = ""
 
 	def addRemote(self):
 		print "\nCopy the following git URL into the next prompt: "
@@ -134,8 +135,18 @@ class herokuHandler:
 		self.existingName = raw_input("\nWhat's the name of the existing Heroku app? ")
 		return self
 
+	def getExistingPipeline(self):
+		self.existingPipeline = raw_input("\nWhat's the name of the existing deployment pipeline? [leave blank if it's not part of a pipeline]")
+		return self
+
 	def getNewAppName(self):
 		self.newName = raw_input("\nWhat's the name of the new Heroku app? ")
+		return self
+
+	def sendToPipeline(self):
+		if len(self.existingPipeline) > 0:
+			call(['heroku', 'plugins:install', 'heroku-pipelines'])
+			call(['heroku', 'pipelines:add', '--app', self.newName, self.existingPipeline])
 		return self
 
 	def setEnvVars(self, settings):
@@ -154,22 +165,15 @@ heroku = herokuHandler()
 
 
 # Now run through all its methods and do all the things
-heroku
-	.getExistingAppName()
-	.getEnvVars()
-	.getNewAppName()
-	.fork()
-	.addRemote()
-	.setEnvVars(
-
-		collector
-			.listEnvVars()
+heroku.getExistingAppName().getExistingPipeline().getEnvVars().getNewAppName().fork().sendToPipeline().addRemote().setEnvVars(
+		collector.listEnvVars()
 			.selectEnvVars()
 			.collectSettings()
 			.confirmSettings()
 			.toSet # this ultimately returns the dictionary of key/values to set/update
 
 	).checkNewEnvVars()
+
 
 print colors.GREEN + "\nAll done" + colors.ENDC
 exit()
