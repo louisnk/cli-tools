@@ -18,7 +18,7 @@ class colors:
 	BOLD = '\033[1m'
 	ENDC = '\033[0m'
 
-
+# All the methods to gather and store env variables for your forked app
 class settingsCollector:
 	def __init__(self):
 		self.selectList = {}
@@ -83,7 +83,7 @@ class settingsCollector:
 	def splitVarsList(self, varsList):
 		return list(map((lambda s: s.strip()), str.split(varsList, ',')))
 
-
+# All the calls and prompts to interact with Heroku
 class herokuHandler:
 	def __init__(self):
 		self.existingEnvVars = {}
@@ -119,15 +119,23 @@ class herokuHandler:
 		return self
 
 	def getEnvVars(self):
-		print colors.GREEN + "\nCopy everything from here:\n============================\n" + colors.ENDC
+		def splitEnvVals(i):
+			# Strip extra whitespace, replace full quotes, split on colons, then strip each individual piece again
+			vals = map((lambda s: s.strip()), i.strip().replace('"', '').split(": "))
+			self.existingEnvVars[vals[0]] = vals[1] # Build our existingEnvVars hashmap
+			return
+
+		print colors.GREEN + "\nCopy everything except the title from here:\n============================\n" + colors.ENDC
 		call(['heroku', 'config', '--app', self.existingName])
 		print colors.RED + "\n============================\nto here." + colors.ENDC
-		print "\nTake it into your editor and put the keys into a single comma separated string. Put the values in their own comma separated list, next."
-		varList = raw_input("\nPaste the keys here: ")
-		varVals = str.split(raw_input("\nPaste the values here: "), ",")
 
-		for i, envVar in enumerate(str.split(varList, ",")):
-			self.existingEnvVars[envVar] = varVals[i]
+		varList = []
+		sentinel = '__end'
+
+		print "\nPaste it here, hit enter, type " + colors.BOLD + "__end" + colors.ENDC + ", and hit enter again when finished: "
+
+		for line in iter(raw_input, sentinel):
+			varList.append(splitEnvVals(line))
 
 		return self
 
@@ -157,21 +165,20 @@ class herokuHandler:
 
 		return self
 
-print "\nWelcome to the Heroku Clone CLI - Let's walk through the process to clone a new Heroku instance from the existing app of your choice."
-
 # Initialize our classes for env var collection
 collector = settingsCollector()
 heroku = herokuHandler()
 
 
-# Now run through all its methods and do all the things
+print "\nWelcome to the Heroku Clone CLI - Let's walk through the process to clone a new Heroku instance from the existing app of your choice."
+
+# Now run through all the methods and do all the things
 heroku.getExistingAppName().getExistingPipeline().getEnvVars().getNewAppName().fork().sendToPipeline().addRemote().setEnvVars(
 		collector.listEnvVars()
 			.selectEnvVars()
 			.collectSettings()
 			.confirmSettings()
 			.toSet # this ultimately returns the dictionary of key/values to set/update
-
 	).checkNewEnvVars()
 
 
