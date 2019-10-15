@@ -1,26 +1,24 @@
-parse_git_branch() {
-     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
-}
+test=$(/bin/ps -ef | grep ssh-agent | grep -v grep | /usr/bin/awk '{print $2}' | xargs)
 
-# test=`/bin/ps -ef | grep ssh-agent | grep -v grep | /usr/bin/awk '{print $2}' | xargs`
-
-# if [ "$test" = "" ]; then
+if [ "$test" = "" ]; then
    # there is no agent running
-  # if [ -e "$HOME/agent.sh" ]; then
-      # remove the old  file
-   #   rm -f $HOME/agent.sh
-   #fi;
-   # start a new agent 
-   #/usr/bin/ssh-agent  | grep -v echo >&$HOME/agent.sh
-#fi; 
- 
-# test -e $HOME/agent.sh && source $HOME/agent.sh
+  if [ -e "$HOME/.ssh/agent.sh" ]; then
+    # remove the old  file
+    rm -f $HOME/.ssh/agent.sh
+    echo "mars"
+  fi;
+   # start a new agent
+    echo "venus"
+   /usr/bin/ssh-agent | grep -v echo >&$HOME/.ssh/agent.sh
+fi;
+
+test -e $HOME/.ssh/agent.sh && source $HOME/.ssh/agent.sh
 
 alias kagent="kill -9 $SSH_AGENT_PID"
 
 function git_pull {
-  git fetch origin && 
-  git merge origin/$(git branch | grep \* | cut -d ' ' -f2)
+  git fetch origin &&
+  git merge origin/$()
 }
 
 function als {
@@ -35,12 +33,11 @@ function decks {
   docker exec -it  $1 /bin/bash
 }
 
-alias dbt='~/workspace/koru/db-tunnel.sh'
 alias dc='docker-compose'
 alias dcu='docker-compose up --build -d'
 alias dcl='docker-compose up --build'
 alias dlog='docker logs -f'
-alias dls='docker ps' 
+alias dls='docker ps'
 alias dssh=decks
 alias ga='git add'
 alias gaa='git add --all'
@@ -86,14 +83,14 @@ alias pt='ping 8.8.8.8 -c 5'
 alias pl='ping 192.168.1.1 -c 5'
 alias airport=/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport
 
-function gkb_fn { 
-  git checkout -b $1 && 
-  git push -u origin $1 
+function gkb_fn {
+  git checkout -b $1 &&
+  git push -u origin $1
 }
 
 alias gkb=gkb_fn
 
-function gmd_fn { 
+function gmd_fn {
   gk develop && gp && gk $1 && gm develop && gpp
 }
 
@@ -116,7 +113,7 @@ alias sindy="c && cd indy-sdk && docker build -f ci/indy-pool.dockerfile -t indy
 export NVM_DIR="/Users/creativity/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 
-nvm use 12 
+nvm use 12
 
 # Setup env variables
 export ANDROID_HOME=/usr/local/share/android-sdk
@@ -159,7 +156,7 @@ eval "$(direnv hook bash)"
 
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-export PATH="/usr/local/opt/openssl/bin:/Users/creativity/Library/Python/3.7/bin:$PATH"
+export PATH="/usr/local/opt/openssl/bin:$HOME/Library/Python/3.7/bin:$PATH"
 
 if which pyenv-virtualenv-init > /dev/null; then eval "$(pyenv virtualenv-init -)"; fi
 eval "$(pyenv init -)"
@@ -177,13 +174,3 @@ export PYTHONPATH=$PATH:/lib/python2.7/site-packages/
 
 prompt
 
-
-# tabtab source for serverless package
-# uninstall by removing these lines or running `tabtab uninstall serverless`
-[ -f /Users/creativity/workspace/persisto/jobseekers/api/node_modules/tabtab/.completions/serverless.bash ] && . /Users/creativity/workspace/persisto/jobseekers/api/node_modules/tabtab/.completions/serverless.bash
-# tabtab source for sls package
-# uninstall by removing these lines or running `tabtab uninstall sls`
-[ -f /Users/creativity/workspace/persisto/jobseekers/api/node_modules/tabtab/.completions/sls.bash ] && . /Users/creativity/workspace/persisto/jobseekers/api/node_modules/tabtab/.completions/sls.bash
-# tabtab source for slss package
-# uninstall by removing these lines or running `tabtab uninstall slss`
-[ -f /Users/creativity/workspace/persisto/jobseekers/api/node_modules/tabtab/.completions/slss.bash ] && . /Users/creativity/workspace/persisto/jobseekers/api/node_modules/tabtab/.completions/slss.bash

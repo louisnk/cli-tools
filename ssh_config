@@ -1,0 +1,19 @@
+Host *.some.host
+  IdentityFile ~/.ssh/some-key.pem
+  User ec2-user
+  UseKeychain yes
+  AddKeysToAgent yes
+  Port 22
+
+Host bastion.some.host
+  HostName 1.1.1.1
+
+Host protected.some.host
+  HostName 2.2.2.2
+  ProxyCommand ssh -o 'ForwardAgent yes' bastion.some.host  'ssh-add /home/ec2-user/on-the-server.pem && nc %h %p'
+
+
+Host *
+ AddKeysToAgent yes
+ UseKeychain yes
+ IdentityFile ~/.ssh/id_rsa
